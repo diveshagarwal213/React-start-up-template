@@ -156,5 +156,153 @@ export const useCustomQueryHook = (id,options) => {
         }
     })
 }
+```
+
+## Pagination   
+Basic
+```ts
+const [page, setPage] = useState(1);
+const fn = (id) => {}; //get promise
+export const useCustomQueryHook = (id,options) => {
+    return  useQuery(["uniqueKey", id],() => fn(id), {
+        ...options 
+        keepPreviousData:true // keeps the previous data while fetching
+    })
+}
+```
+# useInfiniteQuery()
+
+infinite Queries video 20
+
+# useMutation () Hook
+
+custom useMutation hooks
+
+```tsx
+
+const fn = () => {} // axios.post
+export const useCustomMutationHook = () => {
+    return useMutation(fn);
+}
+
+const {mutate} = useCustomMutationHook()
+```
+
+### Invalidate query
+
+```tsx
+const fn = () => {} // axios.post
+export const useCustomMutationHook = () => {
+    const queryClient = useQueryClient()
+
+    return useMutation(fn, {
+        onSuccess: () => {
+            queryClient.invalidateQueries('query-key');
+        }
+    });
+}
+const {mutate} = useCustomMutationHook()
+```
+### update get query
+
+```tsx
+const fn = () => {} // axios.post
+export const useCustomMutationHook = () => {
+    const queryClient = useQueryClient()
+
+    return useMutation(fn, {
+        onSuccess: (data) => {
+            queryClient.setQueryData('query-key',(oldQueryData) => {
+                return {
+                    ...oldQueryData,
+                    data: [...oldQueryData.data, data]
+                }
+            });
+        }
+    });
+}
+const {mutate} = useCustomMutationHook()
+```
+
+### optimistic Updates
+update data before success and change if something went wrong.
+
+```tsx
+
+const fn = () => {} // axios.post
+export const useCustomMutationHook = () => {
+    const queryClient = useQueryClient()
+
+    return useMutation(fn, {
+        onMutate: async () => {
+            //Cancel queries
+            await queryClient.cancelQueries('unique-api-key');
+            //holding old data in case of rollback
+            const temp_data = queryClient.getQueryData("unique-api-key")
+
+            //updating data
+            // add random || (length + 1) id field for the data
+             queryClient.setQueryData('query-key',(oldQueryData) => {
+                return {
+                    ...oldQueryData,
+                    data: [...oldQueryData.data, { id: "random_id",...data}]
+                }
+            });
+
+            return{
+                temp_data
+            }
+        },
+        onError:(_error, _payload, context) => {
+            //rolling back
+            queryClient.setQueryData('query-key',(oldQueryData) => {
+                return {
+                    ...oldQueryData,
+                    data: context.temp_data
+                }
+            });
+        },
+        onSettled:() => {
+            //sync data in background
+            queryClient.invalidateQueries('query-key');
+        },
+    });
+}
+const {mutate} = useCustomMutationHook()
+
+```
+
+# Axios Intercepter
+
+```tsx
+const client = axios.create({baseUrl:"localHost"});
+
+export const request = ({...options}) => {
+   client.default.headers.common.Authorization = `Bearer token`;
+   const onSuccess = res => res
+   const onError = err => {
+    //custom handling
+    return err;
+   }
+
+   return client(options).then(onSuccess).catch(onError);
+}
+
+//usage
+
+const fn = () => {
+    return request({url:"api/"});
+}; //get promise
+const fn = () => {
+    return request({url:"api/", method:'post', data:data});
+}; //post promise
+
+
+export const useCustomQueryHook = (options) => {
+    return  useQuery("uniqueKey",fn, {
+        // ... here default customization
+        ...options // onError onSuccess ...etc
+    })
+}
 
 ```

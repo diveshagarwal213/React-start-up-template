@@ -39,6 +39,10 @@ const from = useForm();
         // by default number,date values are string.
         valueAsNumber:true
         valueAsDate:true
+
+        //---------------------------------
+        disabled:true
+        disabled:watch("channel" === "")
     } 
 
     ```
@@ -47,22 +51,39 @@ const from = useForm();
     2. Helps when working with Dynamic Fields
 
 + ### handleSubmit
-    
-    ```tsx
-    type IData : {
-        username:string;
-    }
+    + onSubmit
+        ```tsx
+        type IData : {
+            username:string;
+        }
 
-    const from = useForm<IData>();
-    const {register, handleSubmit} = from;
+        const from = useForm<IData>();
+        const {register, handleSubmit} = from;
 
-    const mySubmitFunction = (data:IData) => {};
+        const mySubmitFunction = (data:IData) => {};
 
-    const JSX = 
+        const JSX = 
 
-    <form onSubmit={handleSubmit(mySubmitFunction)} ></form>
+        <form onSubmit={handleSubmit(mySubmitFunction)} ></form>
 
-    ```
+        ```
+    + onError
+
+        ```tsx
+        type IData : {
+            username:string;
+        }
+
+        const from = useForm<IData>();
+        const {register, handleSubmit} = from;
+
+        const mySubmitFunction = (data:IData) => {};
+        const onErrorHandler = (errors:FieldsError<IData>) => {};
+
+        const JSX = 
+        <form onSubmit={handleSubmit(mySubmitFunction, onErrorHandler)} ></form>
+        ```
+
 + ### formState
     + helps to display error messages
         
@@ -74,13 +95,24 @@ const from = useForm();
         const from = useForm<IData>();
         const {register, handleSubmit, formState} = from;
         const {errors} = formState;
-    
-        const JSX = 
 
-        <p > {errors.fieldName?.message} </p>
-
+        const JSX = <p > {errors.fieldName?.message} </p>
         ```
+    + get the details of touched and dirtyFields, isDirty, isValid
+        
+        ```tsx
+        const {register, handleSubmit, formState} = from;
+        const {errors, touchedFields, dirtyFields, isDirty, isValid } = formState;
+        const JSX =<p > {errors.fieldName?.message} </p>
+        ```    
 
++ ### trigger method
+    Manually trigger validation 
+    ```tsx
+        const {register, handleSubmit, formState, trigger} = from;
+    ```    
+    trigger();
+    trigger("fieldName");
 + ### watch
     help to observe a value
     1. Basic
@@ -109,6 +141,10 @@ const from = useForm();
     + getValues("single") // return a value
     + getValues("single.one") // return a value
     + getValues(["one","two"]) // return array of selected values
++ ### setValues method
+    + setValues("fieldName", fieldValue, options) // return a value
+    + options
+        + shouldValidate,shouldDirty,shouldTouched  
 
 ## useForm() Hook Options
 ```tsx
@@ -159,6 +195,17 @@ const from = useForm(useFormOptions);
             }
         };
         ```
+
++ ### mode
+    + onSubmit (default)
+    + onBlur 
+        + trigger validation when focus out of field
+    + onTouched 
+        + trigger validation when focus out of field first time then every change event
+    + onChange
+        + on every change event
+    + all
+        + onBlur + onChange  
 
 # useFieldArray with useForm (Dynamic Fields)
 

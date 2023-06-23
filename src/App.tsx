@@ -1,9 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-//css
-import "./App.css";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import Core from "./Core";
+import { RouterProvider } from "react-router-dom";
+
+//others
+import { router } from "./routes";
+//css
+import "./App.scss";
 
 //RQ
 const queryClient = new QueryClient();
@@ -11,7 +13,7 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Core />
+      <RouterProvider router={router} />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
